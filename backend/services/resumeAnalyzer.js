@@ -1,12 +1,12 @@
 // backend/services/resumeAnalyzer.js
 
-const fs = require('fs');
 const groq = require('../config/groq');
 
 // ───────────────────────────────────────
 // FUNCTION 1: Extract text from PDF
+// Now accepts buffer instead of file path
 // ───────────────────────────────────────
-const extractTextFromPDF = (filePath) => {
+const extractTextFromPDF = (fileBuffer) => {
   return new Promise((resolve, reject) => {
     const PDFParser = require('pdf2json');
     const pdfParser = new PDFParser();
@@ -36,7 +36,8 @@ const extractTextFromPDF = (filePath) => {
       reject(error);
     });
 
-    pdfParser.loadPDF(filePath);
+    // Parse from buffer instead of file path
+    pdfParser.parseBuffer(fileBuffer);
   });
 };
 
@@ -46,9 +47,6 @@ const extractTextFromPDF = (filePath) => {
 const analyzeWithAI = async (resumeText) => {
   const chatCompletion = await groq.chat.completions.create({
     model: 'llama-3.3-70b-versatile',
-    // ↑ Very powerful free model
-    // Alternative: 'mixtral-8x7b-32768'
-
     messages: [
       {
         role: 'system',
@@ -72,30 +70,25 @@ const analyzeWithAI = async (resumeText) => {
         ${resumeText}`
       }
     ],
-
     temperature: 0.7,
     max_tokens: 1024,
   });
 
-  // Get the response text
   const responseText = chatCompletion.choices[0].message.content;
-
-  // Clean and parse JSON
   const cleaned = responseText
     .replace(/```json/g, '')
     .replace(/```/g, '')
     .trim();
 
-  const result = JSON.parse(cleaned);
-  return result;
+  return JSON.parse(cleaned);
 };
 
 // ───────────────────────────────────────
 // MAIN FUNCTION
 // ───────────────────────────────────────
-const analyzeResume = async (filePath) => {
-  console.log('📖 Reading PDF...');
-  const resumeText = await extractTextFromPDF(filePath);
+const analyzeResume = async (fileBuffer) => {
+  console.log('📖 Reading PDF from memory...');
+  const resumeText = await extractTextFromPDF(fileBuffer);
 
   console.log(`📝 Extracted ${resumeText.length} characters`);
 
@@ -105,10 +98,7 @@ const analyzeResume = async (filePath) => {
 
   const analysis = await analyzeWithAI(resumeText);
 
-  return {
-    analysis,
-    textLength: resumeText.length
-  };
+  return { analysis, textLength: resumeText.length };
 };
 
 module.exports = analyzeResume;

@@ -1,34 +1,31 @@
+// backend/config/multer.js
+
 const multer = require('multer');
-const path = require('path');
 
+// ── Use MEMORY storage instead of disk ──
+// On cloud servers like Render, disk storage
+// doesn't work reliably. Memory storage keeps
+// the file in RAM temporarily — perfect for us
+// since we delete it after analysis anyway!
 
-const storage = multer.diskStorage({
+const storage = multer.memoryStorage();
+// File is stored in memory as buffer
+// Available as req.file.buffer
 
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
-    
-  },
-    filename: function (req, file, cb) {
-   
-    const uniqueName = 'resume-' + Date.now() + path.extname(file.originalname);
-   
-    cb(null, uniqueName);
-  },
-  });
-  const fileFilter = function (req, file, cb) {
+const fileFilter = function (req, file, cb) {
   if (file.mimetype === 'application/pdf') {
-    cb(null, true);   
+    cb(null, true);
   } else {
-    cb(new Error('Only PDF files are allowed!'), false); 
+    cb(new Error('Only PDF files are allowed!'), false);
   }
 };
+
 const upload = multer({
-  storage: storage,     
-  fileFilter: fileFilter, 
+  storage: storage,
+  fileFilter: fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024 
+    fileSize: 5 * 1024 * 1024 // 5MB
   }
 });
 
 module.exports = upload;
-

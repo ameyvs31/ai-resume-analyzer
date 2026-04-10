@@ -6,62 +6,53 @@ const upload = require('../config/multer');
 const analyzeResume = require('../services/resumeAnalyzer');
 const fs = require('fs');
 
-// POST /api/resume/upload
-router.post('/upload', (req, res) => {
+router.post('/upload', protect, (req, res) => {
   upload.single('resume')(req, res, async function (err) {
-
-    // Handle multer errors
     if (err) {
-      return res.status(400).json({
-        status: 'error',
-        message: err.message
-      });
+      return res.status(400).json({ status: 'error', message: err.message });
     }
 
-    // Handle missing file
     if (!req.file) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Please upload a PDF file'
-      });
+      return res.status(400).json({ status: 'error', message: 'Please upload a PDF file' });
     }
 
     try {
-      // req.file.path = where multer saved the file
-      // e.g. "uploads/resume-1234567890.pdf"
-      const filePath = req.file.path;
-
       console.log('📄 PDF received:', req.file.originalname);
-      console.log('🤖 Sending to AI for analysis...');
+      console.log('🤖 Analyzing with AI...');
 
-      // Analyze the resume
-      const result = await analyzeResume(filePath);
+      // Pass buffer directly — no file path needed!
+      const result = await analyzeResume(req.file.buffer);
 
-      console.log('✅ Analysis complete!');
+      // No need to delete file — memory storage auto-clears ✅
 
-      // Delete the file after analysis
-      // We don't need to store PDFs — just the analysis result
-      fs.unlinkSync(filePath);
-      // unlinkSync = delete this file
+      const savedResume = await Resume.create({
+        fileName:        req.file.originalname,
+        score:           result.analysis.score,
+        strengths:       result.analysis.strengths,
+        weaknesses:      result.analysis.weaknesses,
+        suggestions:     result.analysis.suggestions,
+        missingKeywords: result.analysis.missingKeywords,
+        summary:         result.analysis.summary
+      });
 
-      // Send the result back
+      console.log('💾 Saved to MongoDB!');
+
       res.json({
-        status: 'success',
-        message: 'Resume analyzed successfully!',
-        fileName: req.file.originalname,
-        ...result
-        // ...result spreads: analysis + textLength into response
+        status:   'success',
+        message:  'Resume analyzed and saved!',
+        id:       savedResume._id,
+        fileName: savedResume.fileName,
+        analysis: result.analysis,
+        savedAt:  savedResume.createdAt
       });
 
     } catch (error) {
-      console.error('❌ Analysis failed:', error.message);
+      console.error('❌ Error:', error.message);
       res.status(500).json({
-        status: 'error',
-        message: 'Failed to analyze resume. Please try again.',
-        detail: error.message
+        status:  'error',
+        message: 'Something went wrong.',
+        detail:  error.message
       });
     }
   });
 });
-
-module.exports = router;
