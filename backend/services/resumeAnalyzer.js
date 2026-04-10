@@ -33,55 +33,56 @@ const extractTextFromPDF = (fileBuffer) => {
     pdfParser.parseBuffer(fileBuffer);
   });
 };
-
 const analyzeWithAI = async (resumeText) => {
+
+  // Clean the text before sending to AI
+  const cleanText = resumeText
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // remove control characters
+    .replace(/\r\n/g, '\n')  // normalize line endings
+    .substring(0, 3000);     // limit text length
+
   const chatCompletion = await groq.chat.completions.create({
     model: 'llama-3.3-70b-versatile',
     messages: [
       {
         role: 'system',
-        content: `You are an expert resume reviewer and career coach.
-        Always respond with ONLY a valid JSON object.
-        Never add markdown, backticks, or any extra text.`
+        content: `You are an expert resume reviewer.
+        Respond with ONLY a valid JSON object.
+        No markdown, no backticks, no extra text whatsoever.`
       },
       {
         role: 'user',
-        content: `Analyze this resume and return a JSON object with exactly these fields:
+        content: `Analyze this resume. Return ONLY this JSON:
         {
-          "score": (number 0-100),
-          "strengths": (array of 3 strings),
-          "weaknesses": (array of 3 strings),
-          "suggestions": (array of 3 strings),
-          "missingKeywords": (array of 5-6 strings),
-          "summary": (string, 2 sentences)
+          "score": 75,
+          "strengths": ["point1", "point2", "point3"],
+          "weaknesses": ["point1", "point2", "point3"],
+          "suggestions": ["point1", "point2", "point3"],
+          "missingKeywords": ["kw1", "kw2", "kw3", "kw4", "kw5"],
+          "summary": "Two sentence summary here."
         }
-        Resume: ${resumeText}`
+        
+        Resume: ${cleanText}`
       }
     ],
-    temperature: 0.7,
+    temperature: 0.3,
     max_tokens: 1024,
   });
 
   const responseText = chatCompletion.choices[0].message.content;
+  
+  // More aggressive cleaning
   const cleaned = responseText
     .replace(/```json/g, '')
     .replace(/```/g, '')
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
     .trim();
 
-  return JSON.parse(cleaned);
-};
-
-const analyzeResume = async (fileBuffer) => {
-  console.log('📖 Reading PDF from memory...');
-  const resumeText = await extractTextFromPDF(fileBuffer);
-  console.log(`📝 Extracted ${resumeText.length} characters`);
-
-  if (resumeText.length < 50) {
-    throw new Error('Could not extract enough text. Try a different PDF.');
+  // Find JSON object in response
+  const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error('AI did not return valid JSON');
   }
 
-  const analysis = await analyzeWithAI(resumeText);
-  return { analysis, textLength: resumeText.length };
+  return JSON.parse(jsonMatch[0]);
 };
-
-module.exports = analyzeResume;
