@@ -34,7 +34,6 @@ const Login = () => {
 
   return (
     <>
-      {/* Animated Background */}
       <div className="bg-animated">
         <div className="bg-orb3" />
         <div className="bg-grid" />
@@ -43,9 +42,8 @@ const Login = () => {
       <div className="page auth-page">
         <div className="auth-card glass">
 
-          {/* Logo */}
           <div className="auth-logo">
-            <div className="auth-logo-icon">🤖</div>
+            <div className="auth-logo-icon">🔥</div>
           </div>
 
           <h1 className="auth-title">Welcome Back</h1>
@@ -68,7 +66,6 @@ const Login = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                autoComplete="email"
               />
             </div>
 
@@ -88,24 +85,26 @@ const Login = () => {
             <button
               type="submit"
               className="btn btn-primary btn-full"
+              style={{ padding: 16, fontSize: 16, marginTop: 8 }}
               disabled={loading}
             >
               {loading ? (
-                <>
-                  <span className="loading-dots">
-                    <span /><span /><span />
-                  </span>
-                  Signing in...
-                </>
-              ) : (
-                <> 🚀 Sign In </>
-              )}
+                <span className="loading-dots" style={{ marginTop: 16 }}>
+                  <span /><span /><span />
+                </span>
+              ) : '✦ Sign In'}
             </button>
           </form>
 
           <p className="auth-footer">
             No account?{' '}
             <Link to="/signup">Create one free →</Link>
+          </p>
+
+          <p className="auth-footer" style={{ marginTop: 8 }}>
+            <Link to="/" style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>
+              ← Back to home
+            </Link>
           </p>
         </div>
       </div>

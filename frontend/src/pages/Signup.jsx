@@ -102,24 +102,26 @@ const Signup = () => {
             <button
               type="submit"
               className="btn btn-primary btn-full"
+              style={{ padding: 16, fontSize: 16, marginTop: 8 }}
               disabled={loading}
             >
               {loading ? (
-                <>
-                  <span className="loading-dots">
-                    <span /><span /><span />
-                  </span>
-                  Creating account...
-                </>
-              ) : (
-                <> 🎯 Get Started Free </>
-              )}
+                <span className="loading-dots" style={{ marginTop: 16 }}>
+                  <span /><span /><span />
+                </span>
+              ) : '✦ Get Started Free'}
             </button>
           </form>
 
           <p className="auth-footer">
             Already have an account?{' '}
             <Link to="/login">Sign in →</Link>
+          </p>
+
+          <p className="auth-footer" style={{ marginTop: 8 }}>
+            <Link to="/" style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>
+              ← Back to home
+            </Link>
           </p>
         </div>
       </div>

@@ -67,14 +67,13 @@ const Dashboard = () => {
   };
 
   const getScoreLabel = (score) => {
-    if (score >= 75) return { text: '🔥 Excellent', bg: 'rgba(0,255,136,0.1)', color: 'var(--success)', border: 'rgba(0,255,136,0.3)' };
-    if (score >= 50) return { text: '⚡ Good', bg: 'rgba(255,184,0,0.1)', color: 'var(--warning)', border: 'rgba(255,184,0,0.3)' };
-    return { text: '💪 Needs Work', bg: 'rgba(255,68,102,0.1)', color: 'var(--danger)', border: 'rgba(255,68,102,0.3)' };
+    if (score >= 75) return { text: '🔥 Excellent', bg: 'rgba(80,255,150,0.1)', color: 'var(--success)', border: 'rgba(80,255,150,0.25)' };
+    if (score >= 50) return { text: '⚡ Good', bg: 'rgba(255,184,0,0.1)', color: 'var(--warning)', border: 'rgba(255,184,0,0.25)' };
+    return { text: '💪 Needs Work', bg: 'rgba(255,80,80,0.1)', color: 'var(--danger)', border: 'rgba(255,80,80,0.25)' };
   };
 
   return (
     <>
-      {/* Background */}
       <div className="bg-animated">
         <div className="bg-orb3" />
         <div className="bg-grid" />
@@ -85,7 +84,7 @@ const Dashboard = () => {
         {/* Navbar */}
         <nav className="navbar">
           <div className="navbar-logo">ResumeAI ✦</div>
-          <div className="navbar-right">
+          <div className="navbar-links">
             <span className="navbar-user">👤 {user?.name}</span>
             <button className="btn btn-danger" onClick={handleLogout}>
               Sign Out
@@ -130,9 +129,7 @@ const Dashboard = () => {
                   <span>✅</span>
                   <span>{file.name}</span>
                 </div>
-                <p className="upload-subtitle">
-                  Click to change file
-                </p>
+                <p className="upload-subtitle">Click to change file</p>
               </>
             ) : (
               <>
@@ -156,13 +153,13 @@ const Dashboard = () => {
             <button
               className="btn btn-primary btn-full"
               onClick={handleUpload}
-              style={{ marginBottom: 32, padding: '18px', fontSize: 16 }}
+              style={{ marginBottom: 32, padding: 18, fontSize: 17 }}
             >
-              🤖 Analyze My Resume
+              ✦ Analyze My Resume
             </button>
           )}
 
-          {/* Loading State */}
+          {/* Loading */}
           {loading && (
             <div className="glass loading-container" style={{ marginBottom: 32 }}>
               <div className="loading-spinner" />
@@ -179,30 +176,28 @@ const Dashboard = () => {
             <div className="results">
               <div className="section-divider">
                 <div className="section-divider-line" />
-                <span className="section-divider-text">Analysis Results</span>
+                <span className="section-divider-text">✦ Analysis Results</span>
                 <div className="section-divider-line" />
               </div>
 
-              {/* Score Card */}
+              {/* Score */}
               <div className="score-card glass" style={{ marginBottom: 24 }}>
                 <p className="score-label">Overall Score</p>
                 <div className="score-number">
                   {result.score}
                   <span className="score-max">/100</span>
                 </div>
-
                 <div className="score-bar-wrap">
                   <div className="score-bar-bg">
                     <div
                       className="score-bar-fill"
                       style={{
                         width: `${result.score}%`,
-                        background: `linear-gradient(90deg, ${getScoreColor(result.score)}, var(--glow-purple))`
+                        background: `linear-gradient(90deg, ${getScoreColor(result.score)}, var(--orange))`
                       }}
                     />
                   </div>
                 </div>
-
                 {(() => {
                   const label = getScoreLabel(result.score);
                   return (
@@ -220,66 +215,50 @@ const Dashboard = () => {
               {/* Summary */}
               <div className="summary-card glass" style={{ borderRadius: 20, marginBottom: 20 }}>
                 <div className="result-card-header">
-                  <div className="result-card-icon" style={{ background: 'rgba(0,245,255,0.1)' }}>
-                    📝
-                  </div>
-                  <span className="result-card-title" style={{ color: 'var(--glow-cyan)' }}>
-                    Summary
-                  </span>
+                  <div className="result-card-icon" style={{ background: 'rgba(255,80,120,0.12)' }}>📝</div>
+                  <span className="result-card-title" style={{ color: 'var(--pink-soft)' }}>Summary</span>
                 </div>
                 <p className="summary-text">"{result.summary}"</p>
               </div>
 
-              {/* 2-column grid */}
+              {/* Grid */}
               <div className="result-grid">
-
-                {/* Strengths */}
                 <div className="result-card card-strengths">
                   <div className="result-card-header">
                     <div className="result-card-icon">✅</div>
                     <span className="result-card-title">Strengths</span>
                   </div>
                   <ul className="result-list">
-                    {result.strengths.map((item, i) => (
-                      <li key={i}>{item}</li>
-                    ))}
+                    {result.strengths.map((item, i) => <li key={i}>{item}</li>)}
                   </ul>
                 </div>
 
-                {/* Weaknesses */}
                 <div className="result-card card-weaknesses">
                   <div className="result-card-header">
                     <div className="result-card-icon">⚠️</div>
                     <span className="result-card-title">Weaknesses</span>
                   </div>
                   <ul className="result-list">
-                    {result.weaknesses.map((item, i) => (
-                      <li key={i}>{item}</li>
-                    ))}
+                    {result.weaknesses.map((item, i) => <li key={i}>{item}</li>)}
                   </ul>
                 </div>
 
-                {/* Suggestions */}
                 <div className="result-card card-suggestions" style={{ gridColumn: '1 / -1' }}>
                   <div className="result-card-header">
                     <div className="result-card-icon">💡</div>
                     <span className="result-card-title">Action Items</span>
                   </div>
                   <ul className="result-list">
-                    {result.suggestions.map((item, i) => (
-                      <li key={i}>{item}</li>
-                    ))}
+                    {result.suggestions.map((item, i) => <li key={i}>{item}</li>)}
                   </ul>
                 </div>
               </div>
 
-              {/* Missing Keywords */}
+              {/* Keywords */}
               <div className="result-card keywords-card">
                 <div className="result-card-header">
-                  <div className="result-card-icon" style={{ background: 'rgba(191,0,255,0.15)' }}>
-                    🔑
-                  </div>
-                  <span className="result-card-title" style={{ color: '#d88aff' }}>
+                  <div className="result-card-icon" style={{ background: 'rgba(255,140,50,0.15)' }}>🔑</div>
+                  <span className="result-card-title" style={{ color: 'var(--orange-soft)' }}>
                     Missing Keywords
                   </span>
                 </div>
@@ -294,7 +273,7 @@ const Dashboard = () => {
               <button
                 className="btn btn-ghost btn-full"
                 onClick={() => { setResult(null); setFile(null); }}
-                style={{ marginTop: 8, marginBottom: 40 }}
+                style={{ marginTop: 8, marginBottom: 48 }}
               >
                 ↩ Analyze Another Resume
               </button>
