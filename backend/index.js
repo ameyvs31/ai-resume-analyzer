@@ -1,57 +1,73 @@
-// index.js
+// ============================================================
+// server.js — Entry point for the AI Resume Analyzer backend
+// ============================================================
 
-// ─────────────────────────────────────
-// IMPORTS
-// ─────────────────────────────────────
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
+require("dotenv").config();
 
-// Routes
-const authRoutes = require('./routes/auth');
-const resumeRoutes = require('./routes/resume');
+const express = require("express");
+const cors = require("cors");
 
-// Database
-const connectDB = require('./config/database');
+const analyzeRoute = require("./routes/analyze");
 
-// ─────────────────────────────────────
-// APP SETUP
-// ─────────────────────────────────────
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ─────────────────────────────────────
-// CONNECT DATABASE
-// ─────────────────────────────────────
-connectDB();
+// ─── CORS ─────────────────────────────────────────────────────
+// Read allowed origins from .env (comma-separated) or fallback to localhost
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",")
+  : ["http://localhost:5173", "http://localhost:3000"];
 
-// ─────────────────────────────────────
-// MIDDLEWARE
-// ─────────────────────────────────────
-app.use(cors());            // allow frontend requests
-app.use(express.json());    // read JSON data from requests
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. mobile apps, Postman)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
 
-// ─────────────────────────────────────
-// ROUTES
-// ─────────────────────────────────────
+// Handle preflight OPTIONS requests for all routes
+app.options("*", cors());
 
-// Test route (check if server is working)
-app.get('/', (req, res) => {
+// ─── Middleware ───────────────────────────────────────────────
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// ─── Routes ──────────────────────────────────────────────────
+app.get("/health", (req, res) => {
   res.json({
-    status: 'success',
-    message: '🚀 AI Resume Analyzer API is running!'
+    status: "OK",
+    message: "AI Resume Analyzer API is running",
+    timestamp: new Date().toISOString(),
   });
 });
 
-// Auth routes (signup, login)
-app.use('/api/auth', authRoutes);
+app.use("/api", analyzeRoute);
 
-// Resume routes (upload, analyze)
-app.use('/api/resume', resumeRoutes);
+// ─── 404 Handler ─────────────────────────────────────────────
+app.use((req, res) => {
+  res.status(404).json({ error: "Route not found" });
+});
 
-// ─────────────────────────────────────
-// START SERVER
-// ─────────────────────────────────────
+// ─── Global Error Handler ─────────────────────────────────────
+app.use((err, req, res, next) => {
+  console.error("❌ Server error:", err.message);
+  res.status(500).json({
+    error: "Internal server error",
+    message: err.message,
+  });
+});
+
+// ─── Start Server ─────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
-});   
+  console.log(`🔍 Health check: http://localhost:${PORT}/health`);
+});
