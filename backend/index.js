@@ -1,25 +1,16 @@
-// ============================================================
-// server.js — Entry point for the AI Resume Analyzer backend
-// ============================================================
-
 require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-const authRoute = require("./routes/auth");
-app.use("/api/auth", authRoute);
 
+// ─── Route Imports ────────────────────────────────────────────
+const authRoute = require("./routes/auth");
 const analyzeRoute = require("./routes/analyze");
 
-const app = express();
+const app = express();  // ← app must be created BEFORE app.use()
 const PORT = process.env.PORT || 5000;
 
 // ─── CORS ─────────────────────────────────────────────────────
-// Read allowed origins from .env (comma-separated) or fallback to localhost
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(",")
-  : ["http://localhost:5173", "http://localhost:3000"];
-
 app.use(
   cors({
     origin: [
@@ -47,7 +38,8 @@ app.get("/health", (req, res) => {
   });
 });
 
-app.use("/api", analyzeRoute);
+app.use("/api/auth", authRoute);    // ← auth routes
+app.use("/api", analyzeRoute);      // ← analyze route
 
 // ─── 404 Handler ─────────────────────────────────────────────
 app.use((req, res) => {
