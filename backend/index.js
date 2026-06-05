@@ -4,10 +4,11 @@ const express = require("express");
 const cors = require("cors");
 
 // ─── Route Imports ────────────────────────────────────────────
-const authRoute = require("./routes/auth");
+const authRoute    = require("./routes/auth");
 const analyzeRoute = require("./routes/analyze");
+const resumeRoute  = require("./routes/resume");   // ← ADDED
 
-const app = express();  // ← app must be created BEFORE app.use()
+const app = express();
 const PORT = process.env.PORT || 5000;
 
 // ─── CORS ─────────────────────────────────────────────────────
@@ -38,8 +39,9 @@ app.get("/health", (req, res) => {
   });
 });
 
-app.use("/api/auth", authRoute);    // ← auth routes
-app.use("/api", analyzeRoute);      // ← analyze route
+app.use("/api/auth",   authRoute);     // login, signup
+app.use("/api/resume", resumeRoute);   // upload, history  ← ADDED
+app.use("/api",        analyzeRoute);  // analyze
 
 // ─── 404 Handler ─────────────────────────────────────────────
 app.use((req, res) => {
