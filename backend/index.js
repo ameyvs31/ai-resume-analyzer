@@ -2,11 +2,15 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
+const connectDB = require("./config/database");  // ← ADDED
+
+// ─── Connect to MongoDB FIRST ─────────────────────────────────
+connectDB();                                       // ← ADDED
 
 // ─── Route Imports ────────────────────────────────────────────
 const authRoute    = require("./routes/auth");
 const analyzeRoute = require("./routes/analyze");
-const resumeRoute  = require("./routes/resume");   // ← ADDED
+const resumeRoute  = require("./routes/resume");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -39,9 +43,9 @@ app.get("/health", (req, res) => {
   });
 });
 
-app.use("/api/auth",   authRoute);     // login, signup
-app.use("/api/resume", resumeRoute);   // upload, history  ← ADDED
-app.use("/api",        analyzeRoute);  // analyze
+app.use("/api/auth",   authRoute);
+app.use("/api/resume", resumeRoute);
+app.use("/api",        analyzeRoute);
 
 // ─── 404 Handler ─────────────────────────────────────────────
 app.use((req, res) => {
